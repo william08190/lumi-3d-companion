@@ -30,6 +30,8 @@ python -m http.server 8080
 
 浏览器访问 `http://localhost:8080`。可用 `?model=<url>` 参数指定启动模型。
 
+> 默认模型按「本地 `assets/AvatarSample_B.vrm` → jsDelivr CDN」顺序自动加载，克隆仓库后无需手动下载模型即可运行；如需离线使用，把[模型文件](https://cdn.jsdelivr.net/gh/madjin/vrm-samples@master/vroid/stable/AvatarSample_B.vrm)存入 `assets/` 即可。
+
 ## 📸 用照片自定义形象
 
 面板 → 设置 → 「照片定制形象」：
@@ -63,8 +65,7 @@ web-girlfriend-3d/
 │   ├── photo.js        # 照片生成形象（Avaturn / RPM 内嵌创建器）
 │   ├── pose.js         # 关节滑杆面板
 │   └── ui.js           # 面板 / 气泡 / 自定义光标
-└── assets/
-    └── AvatarSample_B.vrm   # 默认模型（VRoid 官方样例，允许免费使用）
+└── assets/              # 本地模型目录（可选，默认走 CDN）
 ```
 
 ## 🔧 技术要点

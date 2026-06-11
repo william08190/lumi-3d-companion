@@ -10,7 +10,9 @@ import { PhotoAvatarCreator } from './photo.js';
 import { UI } from './ui.js';
 
 const params = new URLSearchParams(location.search);
-const DEFAULT_MODEL = params.get('model') || 'assets/AvatarSample_B.vrm';
+// 默认模型：本地优先，缺失时自动回退 CDN（仓库不含模型文件时仍可直接运行）
+const MODEL_CDN = 'https://cdn.jsdelivr.net/gh/madjin/vrm-samples@master/vroid/stable/AvatarSample_B.vrm';
+const DEFAULT_CANDIDATES = params.get('model') ? [params.get('model')] : ['assets/AvatarSample_B.vrm', MODEL_CDN];
 const GREETINGS = ['你来啦，我等你好久了～', '今天也想我了吗？', '嗨～要一直看着我哦'];
 
 const canvas = document.getElementById('stage');
@@ -40,6 +42,7 @@ async function loadModel(url, { revoke = false, greeting = null } = {}) {
       ui.hideLoader();
       ui.showBubble(greeting || GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
     }, 350);
+    return true;
   } catch (err) {
     console.error(err);
     ui.showError('模型加载失败：' + (err.message || '请用本地服务器打开页面'));
@@ -50,6 +53,7 @@ async function loadModel(url, { revoke = false, greeting = null } = {}) {
         ui.showBubble('呜…换装失败了，再试一次？');
       }, 2600);
     }
+    return false;
   } finally {
     if (revoke) URL.revokeObjectURL(url);
   }
@@ -143,5 +147,20 @@ function tick() {
   renderer.render(scene, camera);
 }
 
-loadModel(DEFAULT_MODEL);
+// 依次尝试候选地址（本地缺失时回退 CDN）
+async function loadDefault() {
+  for (let i = 0; i < DEFAULT_CANDIDATES.length; i++) {
+    const url = DEFAULT_CANDIDATES[i];
+    if (i < DEFAULT_CANDIDATES.length - 1) {
+      try {
+        // 预检文件是否存在，缺失则直接尝试下一个候选
+        const head = await fetch(url, { method: 'HEAD' });
+        if (!head.ok) continue;
+      } catch { continue; }
+    }
+    if (await loadModel(url)) return;
+  }
+}
+
+loadDefault();
 tick();

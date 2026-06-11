@@ -80,6 +80,7 @@ export class UI {
   // ----- 加载遮罩 -----
   setProgress(ratio, text) {
     this.loaderFill.style.width = `${Math.round(ratio * 100)}%`;
+    this.loaderText.style.color = '';
     if (text) this.loaderText.textContent = text;
   }
 
