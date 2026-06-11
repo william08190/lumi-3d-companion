@@ -2,6 +2,10 @@
 
 纯网页版 3D 互动伴侣 —— 真 3D 渲染、全身关节可动、感知鼠标位置与点击。零构建、零后端，浏览器打开即用。
 
+**🎮 在线试玩（无需安装，点开即玩）：<https://william08190.github.io/lumi-3d-companion/>**
+
+[![Live Demo](https://img.shields.io/badge/🎮_在线试玩-Live_Demo-e8527a?style=for-the-badge)](https://william08190.github.io/lumi-3d-companion/)
+
 ![tech](https://img.shields.io/badge/Three.js-0.170-e8a0b4) ![tech](https://img.shields.io/badge/three--vrm-3.x-d8b78a) ![tech](https://img.shields.io/badge/构建-无需-9fb8e8)
 
 ## ✨ 功能
@@ -20,7 +24,9 @@
 
 ## 🚀 运行
 
-需要通过本地 HTTP 服务器打开（ES Module + 模型加载有跨域限制）：
+**方式一：在线试玩（推荐）** — 直接打开 <https://william08190.github.io/lumi-3d-companion/>，无需任何安装。
+
+**方式二：本地运行** — 需要通过本地 HTTP 服务器打开（ES Module + 模型加载有跨域限制）：
 
 ```bash
 cd web-girlfriend-3d
