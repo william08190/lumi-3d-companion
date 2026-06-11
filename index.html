@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMI · 心动玩偶 — 3D 互动伴侣</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.4.2/lib/three-vrm.module.min.js"
+  }
+}
+</script>
+</head>
+<body data-theme="dusk">
+
+<!-- 背景氛围层 -->
+<div class="bg-atmosphere">
+  <div class="bg-gradient"></div>
+  <div class="bg-vignette"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<!-- 3D 画布 -->
+<canvas id="stage"></canvas>
+
+<!-- 自定义光标 -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- 标题 -->
+<header class="masthead">
+  <h1 class="masthead__title">LUMI</h1>
+  <p class="masthead__sub">心动玩偶 · Interactive Companion</p>
+  <div class="masthead__rule"></div>
+</header>
+
+<!-- 气泡对话 -->
+<div class="speech-bubble" id="speechBubble"><span id="speechText"></span></div>
+
+<!-- 关节标记容器（姿势模式） -->
+<div id="jointMarkers"></div>
+
+<!-- 右侧控制面板 -->
+<aside class="panel" id="panel">
+  <button class="panel__collapse" id="panelToggle" title="收起/展开面板">❮</button>
+  <nav class="panel__tabs">
+    <button class="tab is-active" data-tab="interact">互动</button>
+    <button class="tab" data-tab="pose">姿势</button>
+    <button class="tab" data-tab="expression">表情</button>
+    <button class="tab" data-tab="settings">设置</button>
+  </nav>
+
+  <!-- 互动 -->
+  <section class="tab-page is-active" data-page="interact">
+    <h2 class="panel__heading">与她互动</h2>
+    <p class="panel__note">移动鼠标，她的视线会追随你；<br>左键轻点她的身体，会有不同反应。</p>
+    <h3 class="panel__label">心情</h3>
+    <div class="chip-row" id="moodRow">
+      <button class="chip" data-mood="neutral">平静</button>
+      <button class="chip" data-mood="happy">开心</button>
+      <button class="chip" data-mood="relaxed">温柔</button>
+      <button class="chip" data-mood="surprised">惊讶</button>
+      <button class="chip" data-mood="sad">委屈</button>
+      <button class="chip" data-mood="angry">生气</button>
+    </div>
+    <h3 class="panel__label">感知开关</h3>
+    <label class="switch-row"><span>视线跟随鼠标</span><input type="checkbox" id="optGaze" checked><i></i></label>
+    <label class="switch-row"><span>自动眨眼</span><input type="checkbox" id="optBlink" checked><i></i></label>
+    <label class="switch-row"><span>呼吸与微动</span><input type="checkbox" id="optBreath" checked><i></i></label>
+  </section>
+
+  <!-- 姿势 -->
+  <section class="tab-page" data-page="pose">
+    <h2 class="panel__heading">姿势工坊</h2>
+    <label class="switch-row switch-row--accent"><span>姿势模式（显示关节点）</span><input type="checkbox" id="optPoseMode"><i></i></label>
+    <p class="panel__note">姿势模式下：拖动发光关节点旋转关节，<br>按住 <kbd>Shift</kbd> 拖动可扭转。</p>
+    <h3 class="panel__label">预设姿势</h3>
+    <div class="chip-row">
+      <button class="chip" data-preset="natural">自然站立</button>
+      <button class="chip" data-preset="greet">挥手致意</button>
+      <button class="chip" data-preset="akimbo">元气叉腰</button>
+      <button class="chip" data-preset="tpose">标准 T-Pose</button>
+    </div>
+    <div class="chip-row">
+      <button class="chip chip--ghost" id="btnResetPose">↺ 重置全部关节</button>
+    </div>
+    <h3 class="panel__label">关节微调</h3>
+    <div id="jointSliders"></div>
+  </section>
+
+  <!-- 表情 -->
+  <section class="tab-page" data-page="expression">
+    <h2 class="panel__heading">表情调音台</h2>
+    <p class="panel__note">直接拉动滑杆，混合出独一无二的表情。</p>
+    <div id="expressionSliders"></div>
+    <div class="chip-row">
+      <button class="chip chip--ghost" id="btnResetExpr">↺ 重置表情</button>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="tab-page" data-page="settings">
+    <h2 class="panel__heading">场景设置</h2>
+    <h3 class="panel__label">氛围主题</h3>
+    <div class="chip-row">
+      <button class="chip" data-theme-btn="dusk">暮夜玫瑰</button>
+      <button class="chip" data-theme-btn="midnight">午夜蓝调</button>
+      <button class="chip" data-theme-btn="dawn">晨光暖橘</button>
+    </div>
+    <label class="switch-row"><span>缓慢环绕镜头</span><input type="checkbox" id="optOrbit"><i></i></label>
+    <h3 class="panel__label">照片定制形象</h3>
+    <p class="panel__note">上传你的照片，AI 自动生成专属 3D 写实形象，<br>完成后自动载入本页面。</p>
+    <div class="chip-row">
+      <button class="chip" id="btnAvaturn">📷 照片生成（Avaturn）</button>
+      <button class="chip" id="btnRPM">Ready Player Me</button>
+    </div>
+    <p class="panel__note">Ready Player Me 在部分网络需国际加速；<br>也可在任意服务生成后下载文件拖入本窗口。</p>
+    <h3 class="panel__label">更换人物模型</h3>
+    <p class="panel__note">支持 <b>.vrm</b> 与 <b>.glb</b>（人形骨骼）模型文件，<br>可直接拖入窗口，或点击下方选择。</p>
+    <label class="file-btn">选择 VRM / GLB 文件<input type="file" id="fileVrm" accept=".vrm,.glb" hidden></label>
+    <h3 class="panel__label">镜头</h3>
+    <div class="chip-row">
+      <button class="chip chip--ghost" id="btnResetCam">↺ 重置镜头</button>
+    </div>
+  </section>
+</aside>
+
+<!-- 底部提示 -->
+<footer class="hint-bar">
+  <span>左键 · 触摸互动</span><i></i><span>右键拖动 · 旋转视角</span><i></i><span>滚轮 · 远近</span>
+</footer>
+
+<!-- 加载遮罩 -->
+<div class="loader" id="loader">
+  <div class="loader__heart"></div>
+  <div class="loader__title">LUMI</div>
+  <div class="loader__bar"><div class="loader__fill" id="loaderFill"></div></div>
+  <div class="loader__text" id="loaderText">正在唤醒她…</div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
